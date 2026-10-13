@@ -2,17 +2,121 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="ContactApp.Views.EditContactPage"
-             Title="EditContactPage">
-    <VerticalStackLayout>
-        <Label 
-            Text="Welcome to .NET MAUI!"
-            VerticalOptions="Center" 
-            HorizontalOptions="Center" />
+             Title="Edit Contact"
+             BackgroundColor="#F2F2F7">
 
-        <Button 
-            x:Name="btnCancel" 
-            Text="Cancel" 
-            Clicked="BtnCancel_Clicked" />
+    <ScrollView>
+        <VerticalStackLayout Padding="20,0,20,0" Spacing="10">
 
-    </VerticalStackLayout>
+            <!-- Avatar Preview -->
+            <Border WidthRequest="100"
+                    HeightRequest="100"
+                    BackgroundColor="#E8F0FE"
+                    StrokeThickness="0"
+                    StrokeShape="RoundRectangle 50"
+                    HorizontalOptions="Center"
+                    Margin="0,20,0,10">
+                <Label x:Name="avatarLabel"
+                       Text="?"
+                       TextColor="#1A73E8"
+                       FontSize="36"
+                       FontAttributes="Bold"
+                       HorizontalOptions="Center"
+                       VerticalOptions="Center" />
+            </Border>
+
+            <!-- Name Field -->
+            <VerticalStackLayout Spacing="4">
+                <Label Text="Name"
+                       FontSize="13"
+                       TextColor="#8E8E93"
+                       Margin="4,0,0,0" />
+                <Border BackgroundColor="White"
+                        StrokeThickness="0"
+                        StrokeShape="RoundRectangle 12"
+                        Padding="10,2">
+                    <Border.Shadow>
+                        <Shadow Brush="Black" Offset="0,2" Radius="6" Opacity="0.06" />
+                    </Border.Shadow>
+                    <Entry x:Name="nameEntry"
+                           Placeholder="Enter name"
+                           FontSize="14"
+                           TextColor="#1C1C1E"
+                           PlaceholderColor="#C7C7CC"
+                           TextChanged="OnFieldChanged"
+                           ClearButtonVisibility="WhileEditing" />
+                </Border>
+            </VerticalStackLayout>
+
+            <!-- Phone Field -->
+            <VerticalStackLayout Spacing="4">
+                <Label Text="Phone"
+                       FontSize="13"
+                       TextColor="#8E8E93"
+                       Margin="4,0,0,0" />
+                <Border BackgroundColor="White"
+                        StrokeThickness="0"
+                        StrokeShape="RoundRectangle 12"
+                        Padding="10,2">
+                    <Border.Shadow>
+                        <Shadow Brush="Black" Offset="0,2" Radius="6" Opacity="0.06" />
+                    </Border.Shadow>
+                    <Entry x:Name="phoneEntry"
+                           Placeholder="Enter phone number"
+                           Keyboard="Telephone"
+                           FontSize="14"
+                           TextColor="#1C1C1E"
+                           PlaceholderColor="#C7C7CC"
+                           TextChanged="OnFieldChanged" />
+                </Border>
+            </VerticalStackLayout>
+
+            <!-- Email Field -->
+            <VerticalStackLayout Spacing="4">
+                <Label Text="Email"
+                       FontSize="13"
+                       TextColor="#8E8E93"
+                        Margin="4,0,0,0" />
+                <Border BackgroundColor="White"
+                    StrokeThickness="0"
+                    StrokeShape="RoundRectangle 12"
+                    Padding="10,2">
+                    <Border.Shadow>
+                        <Shadow Brush="Black" Offset="0,2" Radius="6" Opacity="0.06" />
+                    </Border.Shadow>
+                    <Entry x:Name="emailEntry"
+                           Placeholder="Enter email address"
+                           Keyboard="Email"
+                           FontSize="14"
+                           TextColor="#1C1C1E"
+                           PlaceholderColor="#C7C7CC"
+                           TextChanged="OnFieldChanged" />
+                </Border>
+            </VerticalStackLayout>
+
+            <!-- Save Button -->
+            <Button x:Name="saveButton"
+                    Text="Save"
+                    FontSize="16"
+                    FontAttributes="Bold"
+                    TextColor="White"
+                    BackgroundColor="#1A73E8"
+                    CornerRadius="12"
+                    HeightRequest="40"
+                    Margin="0,20,0,0"
+                    Clicked="OnSaveClicked" />
+
+            <!-- Cancel Button -->
+            <Button Text="Cancel"
+                    FontSize="16"
+                    TextColor="#1A73E8"
+                    BackgroundColor="Transparent"
+                    BorderColor="#1A73E8"
+                    BorderWidth="1"
+                    CornerRadius="12"
+                    HeightRequest="40"
+                    Clicked="OnCancelClicked" />
+
+        </VerticalStackLayout>
+    </ScrollView>
 </ContentPage>

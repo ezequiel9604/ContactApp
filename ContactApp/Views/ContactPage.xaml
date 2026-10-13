@@ -11,7 +11,7 @@
             SelectionMode="Single"
             Margin="16,8"
             VerticalScrollBarVisibility="Never"
-            SelectionChanged="listContacts_SelectionChanged">
+            SelectionChanged="ListContacts_SelectionChanged">
 
             <!-- Spacing between items -->
             <CollectionView.ItemsLayout>

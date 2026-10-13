@@ -1,42 +1,36 @@
+using ContactApp.Models;
+using Contact = ContactApp.Models.Contact;
+using System.Collections.ObjectModel;
+
 namespace ContactApp.Views;
 
-
-public class Contact
-{
-	public string Initials { get; set; }
-    public string Name { get; set; }
-    public string PhoneNumber { get; set; }
-
-
-    public Contact(string initials, string name, string phone)
-	{
-		this.Initials = initials;
-		this.Name = name;
-		this.PhoneNumber = phone;
-	}
-}
 
 public partial class ContactPage : ContentPage
 {
 	public ContactPage()
 	{
 		InitializeComponent();
-
-
-		List<Contact> contacts = new List<Contact> 
-		{ 
-			new("JD", "John Doe", "809-111-2222"),
-            new("SA", "Samantha Adens", "809-111-2222"),
-            new("ML", "Maria Lopez", "809-111-2222")
-        };
-
-		listContacts.ItemsSource = contacts;
 	}
 
-    public void listContacts_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    protected override void OnAppearing()
     {
-
-		DisplayAlertAsync("Selected Item", "You clicked!",  "Cancel");
+        base.OnAppearing();
+        var contacts = new ObservableCollection<Contact>(ContactRepository.GetContacts());
+        listContacts.ItemsSource = contacts;
 
     }
+
+    public async void ListContacts_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+
+        if (e.CurrentSelection.Count == 0) return;
+
+        Contact selectedContact = new Contact((Contact)listContacts.SelectedItem);
+
+		listContacts.SelectedItem = null;
+
+        await Shell.Current.GoToAsync($"{nameof(EditContactPage)}?Id={selectedContact.Id}");
+
+    }
+
 }
