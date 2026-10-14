@@ -1,3 +1,5 @@
 <Solution>
-  <Project Path="ContactApp/ContactApp.csproj" />
+  <Project Path="ContactApp/ContactApp.csproj">
+    <Deploy Solution="Debug|*" />
+  </Project>
 </Solution>

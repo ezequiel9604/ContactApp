@@ -34,5 +34,35 @@ namespace ContactApp.Models
             }
         }
 
+        public static int GetNextId()
+        {
+            return contacts.Count > 0 ? contacts.Max(c => c.Id) + 1 : 1;
+        }
+
+        public static void AddContact(Contact contact)
+        {
+            contacts.Add(contact);
+        }
+
+        public static void DeleteContact(int id)
+        {
+            var contactToDelete = GetContactById(id);
+            if (contactToDelete != null)
+            {
+                contacts.Remove(contactToDelete);
+            }
+        }
+
+        public static List<Contact> SearchContacts(string searchText)
+        {
+            if (string.IsNullOrWhiteSpace(searchText))
+            {
+                return GetContacts();
+            }
+            searchText = searchText.ToLower();
+            var results =  contacts.Where(c => c.Name.ToLower().Contains(searchText) || c.PhoneNumber.Contains(searchText)).ToList();
+            return results;
+        }
+
     }
 }

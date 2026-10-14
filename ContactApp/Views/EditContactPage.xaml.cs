@@ -9,14 +9,9 @@ public partial class EditContactPage : ContentPage
 
     private Contact? Contact;
 
-	public EditContactPage()
-	{
-		InitializeComponent();
-	}
-
-    private void BtnCancel_Clicked(object sender, EventArgs e)
+    public EditContactPage()
     {
-        Shell.Current.GoToAsync("..");
+        InitializeComponent();
     }
 
     public string ContactId
@@ -27,37 +22,35 @@ public partial class EditContactPage : ContentPage
             Contact = ContactRepository.GetContactById(Convert.ToInt32(value));
             if (Contact != null)
             {
-                nameEntry.Text = Contact.Name;
-                phoneEntry.Text = Contact.PhoneNumber;
-                emailEntry.Text = Contact.Email ?? string.Empty;
+                contactControl.Name = Contact.Name;
+                contactControl.Phone = Contact.PhoneNumber;
+                contactControl.Email = Contact.Email ?? string.Empty;
             }
         }
     }
 
-    public void OnSaveClicked(object sender, EventArgs e)
+    public void BtnUpdate_Clicked(object sender, EventArgs e)
     {
         if (Contact != null)
         {
-            Contact.Name = nameEntry.Text;
-            Contact.PhoneNumber = phoneEntry.Text;
-            Contact.Email = emailEntry.Text;
+            Contact.Name = contactControl.Name;
+            Contact.PhoneNumber = contactControl.Phone;
+            Contact.Email = contactControl.Email;
             ContactRepository.UpdateContact(Contact);
+
+            DisplayAlertAsync("Success", "Contact updated successfully.", "OK");
         }
         Shell.Current.GoToAsync("..");
     }
 
-    public void OnCancelClicked(object sender, EventArgs e)
+    public void BtnCancel_Clicked(object sender, EventArgs e)
     {
-        if (Contact != null)
-        {
-           // ContactRepository.DeleteContact(Contact.Id);
-        }
         Shell.Current.GoToAsync("..");
     }
 
-    public void OnFieldChanged(object sender, EventArgs e)
+    public void ContactControl_OnError(object sender, string errorMessage)
     {
-        
+        DisplayAlertAsync("Error", errorMessage, "OK");
     }
 
 }
