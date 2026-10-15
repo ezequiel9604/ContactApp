@@ -4,35 +4,75 @@ using System.Collections.ObjectModel;
 
 namespace ContactApp.Views;
 
-
 public partial class ContactPage : ContentPage
 {
-	public ContactPage()
+
+    private bool _isSwiping;
+    private SwipeView? _openSwipeView;
+
+    public ContactPage()
 	{
 		InitializeComponent();
 	}
 
-    protected override void OnAppearing()
+    private void LoadContacts(List<Contact> contactsList)
     {
-        base.OnAppearing();
-        var contacts = new ObservableCollection<Contact>(ContactRepository.GetContacts());
+        var contacts = new ObservableCollection<Contact>(contactsList);
         listContacts.ItemsSource = contacts;
     }
 
-    public async void ListContacts_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    protected override void OnAppearing()
     {
-        if (e.CurrentSelection.Count == 0) return;
+        base.OnAppearing();
+        LoadContacts(ContactRepository.GetContacts());
+    }
 
-        Contact selectedContact = new Contact((Contact)listContacts.SelectedItem);
+    //  public async void ListContacts_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    //  {
+    //      if (e.CurrentSelection.Count == 0) return;
 
-		listContacts.SelectedItem = null;
+    //      Contact selectedContact = new Contact((Contact)listContacts.SelectedItem);
 
-       // await Shell.Current.GoToAsync($"{nameof(EditContactPage)}?Id={selectedContact.Id}");
+    //listContacts.SelectedItem = null;
+
+    //     await Shell.Current.GoToAsync($"{nameof(EditContactPage)}?Id={selectedContact.Id}");
+    //  }
+
+    private void OnSwipeStarted(object sender, SwipeStartedEventArgs e)
+    {
+        _isSwiping = true;
+    }
+
+    private async void OnSwipeEnded(object sender, SwipeEndedEventArgs e)
+    {
+        _openSwipeView = e.IsOpen ? sender as SwipeView : null;
+
+        // Let the "release" tap pass before accepting taps again
+        await Task.Delay(250);
     }
 
     public async void BtnAddContact_Clicked(object sender, EventArgs e)
     {
         await Shell.Current.GoToAsync(nameof(AddContactPage));
+    }
+
+    public async void OnContactTapped(object sender, TappedEventArgs e)
+    {
+        if (_isSwiping)
+            return;
+
+        // If a row is swiped open, a tap just closes it
+        if (_openSwipeView != null)
+        {
+            _openSwipeView.Close();
+            _openSwipeView = null;
+            return;
+        }
+
+        if (sender is BindableObject view && view.BindingContext is Contact contact)
+        {
+            await Shell.Current.GoToAsync($"{nameof(DetailsContactPage)}?Id={contact.Id}");
+        }
     }
 
     public void OnEditSwipeInvoked(object sender, EventArgs e)
@@ -53,8 +93,7 @@ public partial class ContactPage : ContentPage
                 if (t.Result)
                 {
                     ContactRepository.DeleteContact(contact.Id);
-                    var contacts = new ObservableCollection<Contact>(ContactRepository.GetContacts());
-                    listContacts.ItemsSource = contacts;
+                    LoadContacts(ContactRepository.GetContacts());
                 }
             }, TaskScheduler.FromCurrentSynchronizationContext());
 
@@ -64,9 +103,7 @@ public partial class ContactPage : ContentPage
     public void SearchBar_TextChanged(object sender, TextChangedEventArgs e)
     {
         var searchText = e.NewTextValue?.ToLower() ?? string.Empty;
-
-        var contacts = new ObservableCollection<Contact>(ContactRepository.SearchContacts(searchText));
-        listContacts.ItemsSource = contacts;
+        LoadContacts(ContactRepository.SearchContacts(searchText));
     }
 
 

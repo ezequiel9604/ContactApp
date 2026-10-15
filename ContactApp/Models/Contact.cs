@@ -1,36 +1,92 @@
-﻿
+﻿using Microsoft.Maui.Devices.Sensors;
 
 namespace ContactApp.Models
 {
     public class Contact
     {
+
+        private static int _nextId = 1;
         public int Id { get; set; }
         public string Initials { get; set; }
         public string Name { get; set; }
         public string PhoneNumber { get; set; }
-        public string? Email { get; set; }
+        public string Email { get; set; } = string.Empty;
+        public string Address { get; set; } = string.Empty;
+        public Location? Coordinates { get; set; } = null;
 
 
-        public Contact(int id, string name, string phone)
+        public Contact(string name, string phone)
         {
-            Id = id;
-            Initials = $"{name.Split(' ')[0][0]}{name.Split(' ')[1][0]}".ToUpper();
+            Id = _nextId++;
+            Initials = GetInitials(name);
             Name = name;
             PhoneNumber = phone;
         }
 
-        public Contact(int id, string name, string phone, string email): this(id, name, phone)
+        public Contact(string name, string phone, string email) :
+           this(name, phone)
         {
             Email = email;
         }
 
+        public Contact(string name, string phone, string email, string address) :
+           this(name, phone)
+        {
+            Email = email;
+            Address = address;
+
+            if (!string.IsNullOrEmpty(address))
+                SetCoordinatesAsync(address);
+
+        }
+
         public Contact(Contact contact)
         {
-            Id = contact.Id;
+            Id = _nextId++;
             Initials = contact.Initials;
             Name = contact.Name;
             PhoneNumber = contact.PhoneNumber;
             Email = contact.Email ?? string.Empty;
+            Address = contact.Address ?? string.Empty;
+
+            if (!string.IsNullOrEmpty(contact.Address))
+                SetCoordinatesAsync(contact.Address);
+        }
+
+        public string GetInitials(string name)
+        {
+            string[] names = name.Split(' ');
+            if (names.Length < 2)
+            {
+                return names[0][0].ToString().ToUpper();
+            }
+            return $"{names[0][0]}{names[1][0]}".ToUpper();
+        }
+
+        public async void SetCoordinatesAsync(string address)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(address))
+                {
+                    throw new ArgumentNullException("Address cannot be null or empty to set coordinates!");
+                }
+
+                IEnumerable<Location> locations =
+                    await Geocoding.Default.GetLocationsAsync(address);
+
+                Location? location = locations?.FirstOrDefault();
+
+                Coordinates = location;
+            }
+            catch (FeatureNotSupportedException)
+            {
+                throw new NotSupportedException("Geocoding is not supported on this device.");
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidOperationException($"Error setting coordinates: {ex.Message}");
+            }
         }
     }
 }

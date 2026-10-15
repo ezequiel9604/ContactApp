@@ -110,6 +110,37 @@
             </Border>
         </VerticalStackLayout>
 
+        <VerticalStackLayout Spacing="4">
+            <Label 
+                Text="Address"
+                FontSize="13"
+                TextColor="#8E8E93"
+                Margin="4,0,0,0" />
+            <Border 
+                BackgroundColor="White"
+                StrokeThickness="0"
+                StrokeShape="RoundRectangle 12"
+                Padding="10,2">
+                <Border.Shadow>
+                    <Shadow Brush="Black" Offset="0,2" Radius="6" Opacity="0.06" />
+                </Border.Shadow>
+                <Entry 
+                    x:Name="addressEntry"
+                    Placeholder="Enter address"
+                    Keyboard="Text"
+                    FontSize="14"
+                    TextColor="#1C1C1E"
+                    PlaceholderColor="#C7C7CC">
+                    <Entry.Behaviors>
+                        <toolkit:TextValidationBehavior 
+                            x:Name="addressValidation"
+                            MinimumLength="5"
+                            Flags="ValidateOnAttaching,ValidateOnValueChanged"/>      
+                    </Entry.Behaviors>
+                </Entry>
+            </Border>
+        </VerticalStackLayout>
+
         <!-- Save Button -->
         <Button x:Name="saveButton"
              Text="Save"

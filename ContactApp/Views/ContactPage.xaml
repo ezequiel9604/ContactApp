@@ -3,10 +3,12 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="ContactApp.Views.ContactPage"
              Title="Contacts">
-    <VerticalStackLayout>
+
+    <Grid RowDefinitions="Auto,*,Auto">
 
         <!-- 🔍 Search Bar -->
         <SearchBar x:Name="searchBar"
+                   Grid.Row="0"
                    Placeholder="Search contacts..."
                    PlaceholderColor="#C7C7CC"
                    TextColor="#1C1C1E"
@@ -15,71 +17,62 @@
                    Margin="0,8,14,0"
                    TextChanged="SearchBar_TextChanged"/>
 
-        <CollectionView 
-            x:Name="listContacts"
-            BackgroundColor="Transparent"
-            SelectionMode="Single"
-            Margin="16,8"
-            VerticalScrollBarVisibility="Never"
-            SelectionChanged="ListContacts_SelectionChanged">
+        <CollectionView x:Name="listContacts"
+                        Grid.Row="1"
+                        BackgroundColor="Transparent"
+                        SelectionMode="None"
+                        Margin="16,8"
+                        VerticalScrollBarVisibility="Never">
 
-            <!-- Spacing between items -->
             <CollectionView.ItemsLayout>
                 <LinearItemsLayout Orientation="Vertical" ItemSpacing="12" />
             </CollectionView.ItemsLayout>
 
-            <!-- Empty view -->
             <CollectionView.EmptyView>
                 <Grid Padding="32">
                     <VerticalStackLayout VerticalOptions="Center" HorizontalOptions="Center" Spacing="12">
                         <Label Text="👥" FontSize="48" HorizontalOptions="Center" />
-                        <Label Text="No contacts yet" 
-                               FontSize="16" 
-                               TextColor="#8E8E93" 
+                        <Label Text="No contacts yet"
+                               FontSize="16"
+                               TextColor="#8E8E93"
                                HorizontalOptions="Center" />
                     </VerticalStackLayout>
                 </Grid>
             </CollectionView.EmptyView>
 
-            <!-- Item template -->
             <CollectionView.ItemTemplate>
                 <DataTemplate>
-                    <SwipeView>
-                        <!-- Right swipe = reveals actions from the right edge -->
+                    <SwipeView SwipeStarted="OnSwipeStarted"
+                               SwipeEnded="OnSwipeEnded">
                         <SwipeView.RightItems>
                             <SwipeItems Mode="Reveal">
-
-                                <!-- Edit -->
                                 <SwipeItem Text="Edit"
                                            BackgroundColor="#1A73E8"
                                            Invoked="OnEditSwipeInvoked"
                                            CommandParameter="{Binding .}" />
-
-                                <!-- Delete -->
                                 <SwipeItem Text="Delete"
                                            BackgroundColor="Coral"
                                            Invoked="OnDeleteSwipeInvoked"
                                            CommandParameter="{Binding .}" />
-
                             </SwipeItems>
                         </SwipeView.RightItems>
 
-                        <!-- The actual row content -->
-                        <Border 
-                            Padding="8"
-                            BackgroundColor="White"
-                            StrokeShape="RoundRectangle 8"
-                            StrokeThickness="0"
-                            Margin="4,2">
+                        <Border Padding="8"
+                                BackgroundColor="White"
+                                StrokeShape="RoundRectangle 8"
+                                StrokeThickness="0"
+                                Margin="4,2">
+
+                            <!-- Tap replaces selection -->
+                            <Border.GestureRecognizers>
+                                <TapGestureRecognizer Tapped="OnContactTapped" />
+                            </Border.GestureRecognizers>
+
                             <Border.Shadow>
-                                <Shadow Brush="Black" 
-                                        Offset="0,2" 
-                                        Radius="8" 
-                                        Opacity="0.08" />
+                                <Shadow Brush="Black" Offset="0,2" Radius="8" Opacity="0.08" />
                             </Border.Shadow>
 
                             <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="14">
-                                <!-- Avatar -->
                                 <Border Grid.Column="0"
                                         WidthRequest="30"
                                         HeightRequest="30"
@@ -94,11 +87,7 @@
                                            VerticalOptions="Center" />
                                 </Border>
 
-                                <!-- Info -->
-                                <VerticalStackLayout 
-                                    Grid.Column="1" 
-                                    VerticalOptions="Center" 
-                                    Spacing="2">
+                                <VerticalStackLayout Grid.Column="1" VerticalOptions="Center" Spacing="2">
                                     <Label Text="{Binding Name}"
                                            FontSize="14"
                                            FontAttributes="Bold"
@@ -108,7 +97,6 @@
                                            TextColor="#8E8E93" />
                                 </VerticalStackLayout>
 
-                                <!-- Chevron -->
                                 <Label Grid.Column="2"
                                        Text="›"
                                        FontSize="24"
@@ -122,6 +110,7 @@
         </CollectionView>
 
         <Button x:Name="btnAddContact"
+                Grid.Row="2"
                 Text="Add Contact"
                 BackgroundColor="#1A73E8"
                 TextColor="White"
@@ -130,6 +119,5 @@
                 HeightRequest="48"
                 Margin="16,8"
                 Clicked="BtnAddContact_Clicked" />
-
-    </VerticalStackLayout>
+    </Grid>
 </ContentPage>

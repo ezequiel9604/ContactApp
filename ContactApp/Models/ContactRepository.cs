@@ -6,10 +6,11 @@ namespace ContactApp.Models
 
         public static List<Contact> contacts = new List<Contact>
         {
-            new(1, "John Doe", "809-111-2222"),
-            new(2, "Samantha Adens", "809-111-3333"),
-            new(3, "Maria Lopez", "809-111-4444", "maria.lopez@example.com"),
-            new(4, "Tom Hanks", "809-111-5555", "tom.hanks@example.com"),
+            new("John Doe", "809-111-2222"),
+            new("Samantha Adens", "809-111-3333"),
+            new("Maria Lopez", "809-111-4444", "maria.lopez@example.com"),
+            new("Tom Hanks", "809-111-5555", "tom.hanks@example.com"),
+            new("Ezequiel Martinez", "809-111-6666", "ezequiel.martinez@example.com", "Av. Winston Churchill, Santo Domingo, República Dominicana")
         };
 
         public static List<Contact> GetContacts()
@@ -30,13 +31,8 @@ namespace ContactApp.Models
                 existingContact.Name = contact.Name;
                 existingContact.PhoneNumber = contact.PhoneNumber;
                 existingContact.Email = contact.Email;
-                existingContact.Initials = $"{contact.Name.Split(' ')[0][0]}{contact.Name.Split(' ')[1][0]}";
+                existingContact.Initials = contact.GetInitials(contact.Name);
             }
-        }
-
-        public static int GetNextId()
-        {
-            return contacts.Count > 0 ? contacts.Max(c => c.Id) + 1 : 1;
         }
 
         public static void AddContact(Contact contact)
@@ -60,8 +56,7 @@ namespace ContactApp.Models
                 return GetContacts();
             }
             searchText = searchText.ToLower();
-            var results =  contacts.Where(c => c.Name.ToLower().Contains(searchText) || c.PhoneNumber.Contains(searchText)).ToList();
-            return results;
+            return contacts.Where(c => c.Name.ToLower().Contains(searchText) || c.PhoneNumber.Contains(searchText)).ToList();
         }
 
     }

@@ -12,8 +12,7 @@ public partial class AddContactPage : ContentPage
 
     private void BtnSave_Clicked(object sender, EventArgs e)
     {
-        int nextId = ContactRepository.GetNextId();
-        var newContact = new Contact(nextId, contactControl.Name, contactControl.Phone, contactControl.Email);
+        var newContact = new Contact(contactControl.Name, contactControl.Phone, contactControl.Email);
         ContactRepository.AddContact(newContact);
         DisplayAlertAsync("Success", "Contact added successfully.", "OK");
         Shell.Current.GoToAsync("..");

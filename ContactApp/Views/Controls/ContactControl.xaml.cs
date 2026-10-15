@@ -29,23 +29,32 @@ public partial class ContactControl : ContentView
         get => emailEntry.Text;
         set => emailEntry.Text = value;
     }
+    public string Address
+    {
+        get => addressEntry.Text;
+        set => addressEntry.Text = value;
+    }
 
     public void BtnSave_clicked(object sender, EventArgs e)
     {
         if (nameValidation.IsNotValid)
         {
-            // DisplayAlertAsync("Error", "Name must be at least 5 characters long.", "OK");
             OnError?.Invoke(this, "Name is required.");
             return;
         }
 
         if (emailValidation.IsNotValid)
         {
-
             foreach (var error in emailValidation.Errors)
             {
                 OnError?.Invoke(this, error.ToString());
             }
+            return;
+        }
+
+        if (addressValidation.IsNotValid)
+        {
+            OnError?.Invoke(this, "Address is required.");
             return;
         }
 
