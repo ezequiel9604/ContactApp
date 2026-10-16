@@ -36,6 +36,7 @@ public partial class EditContactPage : ContentPage
             Contact.Name = contactControl.Name;
             Contact.PhoneNumber = contactControl.Phone;
             Contact.Email = contactControl.Email;
+            Contact.Address = contactControl.Address;
 
             ContactRepository.UpdateContact(Contact);
 

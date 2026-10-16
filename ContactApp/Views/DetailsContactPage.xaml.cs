@@ -23,17 +23,41 @@ public partial class DetailsContactPage : ContentPage
 		InitializeComponent();
 	}
 
-    public async void BtnViewMap_Clicked(object sender, EventArgs e)
+    private async void BtnViewMap_Clicked(object sender, EventArgs e)
     {
         if (_contact != null)
         {
-            if (_contact.Coordinates == null)
+
+            if (string.IsNullOrEmpty(_contact.Address))
             {
-                await DisplayAlertAsync("Error", "Coordinates not available.", "Ok");
+                await DisplayAlertAsync("Error", "Address not available.", "Ok");
                 return;
             }
-            
-            Console.WriteLine($"Coordinates: Latitude={_contact.Coordinates?.Latitude}, Longitude={_contact.Coordinates?.Longitude}");
+
+            if (_contact.Coordinates == null)
+            {
+                Location? location = await _contact.GetCoordinatesAsync();
+
+                if (location == null)
+                {
+                    await DisplayAlertAsync("Error", "Coordinates not available.", "Ok");
+                    return;
+                }
+
+                await DisplayAlertAsync("Coordinates", $"Latitude: {location.Latitude}, Longitude: {location.Longitude}", "Ok");
+                return;
+            }
+
+            // await DisplayAlertAsync("Coordinates", $"Latitude: {_contact.Coordinates?.Latitude}, Longitude: {_contact.Coordinates?.Longitude}", "Ok");
+
+            bool opened = await Map.Default.TryOpenAsync(_contact.Coordinates, new MapLaunchOptions { Name = "Contact" });
+
+            if (!opened)
+            {
+                await DisplayAlertAsync("Error", "No maps app available.", "OK");
+                return;
+            }
+               
         }
     }
 }

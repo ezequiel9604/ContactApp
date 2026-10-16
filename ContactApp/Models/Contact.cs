@@ -88,5 +88,35 @@ namespace ContactApp.Models
                 throw new InvalidOperationException($"Error setting coordinates: {ex.Message}");
             }
         }
+
+        public async Task<Location?> GetCoordinatesAsync()
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(Address))
+                {
+                    throw new ArgumentNullException("Address cannot be null or empty to get coordinates!");
+                }
+                IEnumerable<Location> locations =
+                    await Geocoding.Default.GetLocationsAsync(Address);
+                Location? location = locations?.FirstOrDefault();
+
+                if (location != null)
+                {
+                    Coordinates = location;
+                    return location;
+                }
+
+                return null;
+            }
+            catch (FeatureNotSupportedException)
+            {
+                throw new NotSupportedException("Geocoding is not supported on this device.");
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidOperationException($"Error getting coordinates: {ex.Message}");
+            }
+        }
     }
 }

@@ -8,7 +8,7 @@ public partial class ContactPage : ContentPage
 {
 
     private bool _isSwiping;
-    private SwipeView? _openSwipeView;
+    private CancellationTokenSource searchBarCct;
 
     public ContactPage()
 	{
@@ -38,17 +38,9 @@ public partial class ContactPage : ContentPage
     //     await Shell.Current.GoToAsync($"{nameof(EditContactPage)}?Id={selectedContact.Id}");
     //  }
 
-    private void OnSwipeStarted(object sender, SwipeStartedEventArgs e)
+    private void OnSwipeEnded(object sender, SwipeEndedEventArgs e)
     {
         _isSwiping = true;
-    }
-
-    private async void OnSwipeEnded(object sender, SwipeEndedEventArgs e)
-    {
-        _openSwipeView = e.IsOpen ? sender as SwipeView : null;
-
-        // Let the "release" tap pass before accepting taps again
-        await Task.Delay(250);
     }
 
     public async void BtnAddContact_Clicked(object sender, EventArgs e)
@@ -58,17 +50,6 @@ public partial class ContactPage : ContentPage
 
     public async void OnContactTapped(object sender, TappedEventArgs e)
     {
-        if (_isSwiping)
-            return;
-
-        // If a row is swiped open, a tap just closes it
-        if (_openSwipeView != null)
-        {
-            _openSwipeView.Close();
-            _openSwipeView = null;
-            return;
-        }
-
         if (sender is BindableObject view && view.BindingContext is Contact contact)
         {
             await Shell.Current.GoToAsync($"{nameof(DetailsContactPage)}?Id={contact.Id}");
@@ -100,10 +81,23 @@ public partial class ContactPage : ContentPage
         }
     }
 
-    public void SearchBar_TextChanged(object sender, TextChangedEventArgs e)
+    public async void SearchBar_TextChanged(object sender, TextChangedEventArgs e)
     {
-        var searchText = e.NewTextValue?.ToLower() ?? string.Empty;
-        LoadContacts(ContactRepository.SearchContacts(searchText));
+        try
+        {
+            searchBarCct?.Cancel();
+            searchBarCct = new CancellationTokenSource();
+            var token = searchBarCct.Token;
+
+            await Task.Delay(500, token);
+
+            string searchText = e.NewTextValue?.ToLower() ?? string.Empty;
+            LoadContacts(ContactRepository.SearchContacts(searchText));
+        }
+        catch (TaskCanceledException ex)
+        {
+            Console.WriteLine(ex.Message);
+        }
     }
 
 

@@ -42,18 +42,17 @@
 
             <CollectionView.ItemTemplate>
                 <DataTemplate>
-                    <SwipeView SwipeStarted="OnSwipeStarted"
-                               SwipeEnded="OnSwipeEnded">
+                    <SwipeView SwipeEnded="OnSwipeEnded">
                         <SwipeView.RightItems>
-                            <SwipeItems Mode="Reveal">
-                                <SwipeItem Text="Edit"
-                                           BackgroundColor="#1A73E8"
-                                           Invoked="OnEditSwipeInvoked"
-                                           CommandParameter="{Binding .}" />
+                            <SwipeItems>
                                 <SwipeItem Text="Delete"
-                                           BackgroundColor="Coral"
-                                           Invoked="OnDeleteSwipeInvoked"
-                                           CommandParameter="{Binding .}" />
+                                       BackgroundColor="IndianRed"
+                                       Invoked="OnDeleteSwipeInvoked"
+                                       CommandParameter="{Binding .}" />
+                                <SwipeItem Text="Edit"
+                                        BackgroundColor="Orange"
+                                        Invoked="OnEditSwipeInvoked"
+                                        CommandParameter="{Binding .}" />
                             </SwipeItems>
                         </SwipeView.RightItems>
 
