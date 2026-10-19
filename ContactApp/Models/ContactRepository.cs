@@ -4,14 +4,14 @@ namespace ContactApp.Models
     public static class ContactRepository
     {
 
-        public static List<Contact> contacts = new List<Contact>
-        {
+        public static List<Contact> contacts =
+        [
             new("John Doe", "809-111-2222"),
             new("Samantha Adens", "809-111-3333"),
             new("Maria Lopez", "809-111-4444", "maria.lopez@example.com"),
             new("Tom Hanks", "809-111-5555", "tom.hanks@example.com"),
             new("Ezequiel Martinez", "809-111-6666", "ezequiel.martinez@example.com", "Av. Winston Churchill, Santo Domingo, República Dominicana")
-        };
+        ];
 
         public static List<Contact> GetContacts()
         {
@@ -45,7 +45,7 @@ namespace ContactApp.Models
             var contactToDelete = GetContactById(id);
             if (contactToDelete != null)
             {
-                contacts.Remove(contactToDelete);
+                contactToDelete.IsDeleted = true;
             }
         }
 

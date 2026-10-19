@@ -15,6 +15,11 @@ public partial class DetailsContactPage : ContentPage
         {
             _contact = ContactRepository.GetContactById(Convert.ToInt32(value));
             BindingContext = _contact;
+
+            if (string.IsNullOrEmpty(_contact?.Address))
+            {
+                btnViewMap.IsEnabled = false;
+            }
         }
     }
 
@@ -22,6 +27,22 @@ public partial class DetailsContactPage : ContentPage
 	{
 		InitializeComponent();
 	}
+
+    private async void OpenMap(Contact contact)
+    {
+        if (contact?.Coordinates == null)
+        {
+            return;
+        }
+
+        bool opened = await Map.Default.TryOpenAsync(contact.Coordinates, new MapLaunchOptions { Name = "Contact" });
+
+        if (!opened)
+        {
+            await DisplayAlertAsync("Error", "No maps app available.", "OK");
+            return;
+        }
+    }
 
     private async void BtnViewMap_Clicked(object sender, EventArgs e)
     {
@@ -44,20 +65,11 @@ public partial class DetailsContactPage : ContentPage
                     return;
                 }
 
-                await DisplayAlertAsync("Coordinates", $"Latitude: {location.Latitude}, Longitude: {location.Longitude}", "Ok");
+                OpenMap(_contact);
                 return;
             }
 
-            // await DisplayAlertAsync("Coordinates", $"Latitude: {_contact.Coordinates?.Latitude}, Longitude: {_contact.Coordinates?.Longitude}", "Ok");
-
-            bool opened = await Map.Default.TryOpenAsync(_contact.Coordinates, new MapLaunchOptions { Name = "Contact" });
-
-            if (!opened)
-            {
-                await DisplayAlertAsync("Error", "No maps app available.", "OK");
-                return;
-            }
-               
+            OpenMap(_contact);
         }
     }
 }

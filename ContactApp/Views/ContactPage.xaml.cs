@@ -1,6 +1,7 @@
 using ContactApp.Models;
 using Contact = ContactApp.Models.Contact;
 using System.Collections.ObjectModel;
+using Communication = Microsoft.Maui.ApplicationModel.Communication;
 
 namespace ContactApp.Views;
 
@@ -13,12 +14,71 @@ public partial class ContactPage : ContentPage
     public ContactPage()
 	{
 		InitializeComponent();
-	}
+        searchBarCct = new CancellationTokenSource();
+    }
 
-    private void LoadContacts(List<Contact> contactsList)
+    private async IAsyncEnumerable<Communication.Contact> GetPhoneContacts()
+    {
+        try
+        {
+            var statusRequest = await Permissions.CheckStatusAsync<Permissions.ContactsRead>();
+
+            if (statusRequest != PermissionStatus.Granted)
+            {
+                statusRequest = await Permissions.RequestAsync<Permissions.ContactsRead>();
+            }
+
+            if (statusRequest != PermissionStatus.Granted)
+            {
+                await DisplayAlertAsync("Permission Denied",
+                    "Access to contacts is denied. Please enable it in settings.", "OK");
+                yield break;
+            }
+
+            var phoneContacts = await Communication.Contacts.Default.GetAllAsync();
+
+            if (phoneContacts == null)
+                yield break;
+
+            foreach (var contact in phoneContacts)
+            {
+                yield return contact;
+            }
+        }
+        finally { };
+    }
+
+    private async void LoadContacts(List<Contact> contactsList)
     {
         var contacts = new ObservableCollection<Contact>(contactsList);
-        listContacts.ItemsSource = contacts;
+
+        try
+        {
+
+            var phoneContacts = GetPhoneContacts(); ;
+
+            await foreach (var contact in phoneContacts)
+            {
+                string name = $"{contact.GivenName} {contact.FamilyName}".Trim();
+                string phoneNumber = contact.Phones.FirstOrDefault()?.PhoneNumber ?? string.Empty;
+
+                if (contacts.FirstOrDefault(x => x.PhoneNumber == phoneNumber) != null)
+                {
+                    continue;
+                }
+
+                Contact newContact = new(name, phoneNumber);
+
+                ContactRepository.AddContact(newContact);
+                contacts.Add(newContact);
+            }
+        }
+        catch (Exception ex)
+        {
+            await DisplayAlertAsync("Error", ex.Message, "Ok");
+        }
+
+        listContacts.ItemsSource = contacts.Where(x => !x.IsDeleted).ToList();
     }
 
     protected override void OnAppearing()
@@ -26,17 +86,6 @@ public partial class ContactPage : ContentPage
         base.OnAppearing();
         LoadContacts(ContactRepository.GetContacts());
     }
-
-    //  public async void ListContacts_SelectionChanged(object sender, SelectionChangedEventArgs e)
-    //  {
-    //      if (e.CurrentSelection.Count == 0) return;
-
-    //      Contact selectedContact = new Contact((Contact)listContacts.SelectedItem);
-
-    //listContacts.SelectedItem = null;
-
-    //     await Shell.Current.GoToAsync($"{nameof(EditContactPage)}?Id={selectedContact.Id}");
-    //  }
 
     private void OnSwipeEnded(object sender, SwipeEndedEventArgs e)
     {
