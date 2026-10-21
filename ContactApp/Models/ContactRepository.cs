@@ -3,7 +3,6 @@ namespace ContactApp.Models
 {
     public static class ContactRepository
     {
-
         public static List<Contact> contacts =
         [
             new("John Doe", "809-111-2222"),

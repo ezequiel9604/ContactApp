@@ -1,5 +1,8 @@
 ﻿using CommunityToolkit.Maui;
 using Microsoft.Extensions.Logging;
+using ContactApp.Services;
+using ContactApp.Views;
+using ContactApp.ViewModels;
 
 namespace ContactApp
 {
@@ -19,6 +22,16 @@ namespace ContactApp
                 fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
                 fonts.AddFont("OpenSans-Semibold.ttf", "OpenSansSemibold");
             });
+
+            builder.Services.AddSingleton(sp => new HttpClient 
+                { 
+                    BaseAddress = new Uri(Constants.BaseUrl), 
+                    Timeout = TimeSpan.FromSeconds(30) 
+                }
+            );
+            builder.Services.AddSingleton<ContactService>();
+            builder.Services.AddSingleton<ContactsViewModel>();
+            builder.Services.AddTransient<ContactPage>();
 
 #if DEBUG
             builder.Logging.AddDebug();

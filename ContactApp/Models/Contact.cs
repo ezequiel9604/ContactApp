@@ -6,15 +6,19 @@ namespace ContactApp.Models
     {
         private static int _nextId = 1;
         public int Id { get; set; }
-        public string Initials { get; set; }
-        public string Name { get; set; }
-        public string PhoneNumber { get; set; }
+        public string Initials { get; set; } = string.Empty;
+        public string Name { get; set; } = string.Empty;
+        public string PhoneNumber { get; set; } = string.Empty;
         public string Email { get; set; } = string.Empty;
         public string Address { get; set; } = string.Empty;
         public Location? Coordinates { get; set; } = null;
 
         public bool IsDeleted { get; set; } = false;
 
+        public Contact()
+        {
+            Id = _nextId++;
+        }
 
         public Contact(string name, string phone)
         {

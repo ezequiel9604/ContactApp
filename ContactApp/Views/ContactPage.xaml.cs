@@ -1,153 +1,130 @@
 using ContactApp.Models;
-using Contact = ContactApp.Models.Contact;
-using System.Collections.ObjectModel;
+using ContactApp.ViewModels;
 using Communication = Microsoft.Maui.ApplicationModel.Communication;
+using Contact = ContactApp.Models.Contact;
 
 namespace ContactApp.Views;
 
 public partial class ContactPage : ContentPage
 {
-
     private bool _isSwiping;
-    private CancellationTokenSource searchBarCct;
+    private bool _phoneContactsImported;
+    private CancellationTokenSource? _searchCts;
+    private string _currentSearch = string.Empty;
 
-    public ContactPage()
-	{
-		InitializeComponent();
-        searchBarCct = new CancellationTokenSource();
-    }
+    private readonly ContactsViewModel _viewModel;
 
-    private async IAsyncEnumerable<Communication.Contact> GetPhoneContacts()
+    public ContactPage(ContactsViewModel viewModel)
     {
-        try
+        InitializeComponent();
+        _viewModel = viewModel;
+        BindingContext = _viewModel;
+    }
+    protected override async void OnAppearing()
+    {
+        base.OnAppearing();
+        await _viewModel.LoadCommand.ExecuteAsync(null);
+        if (!_phoneContactsImported)
         {
-            var statusRequest = await Permissions.CheckStatusAsync<Permissions.ContactsRead>();
-
-            if (statusRequest != PermissionStatus.Granted)
-            {
-                statusRequest = await Permissions.RequestAsync<Permissions.ContactsRead>();
-            }
-
-            if (statusRequest != PermissionStatus.Granted)
-            {
-                await DisplayAlertAsync("Permission Denied",
-                    "Access to contacts is denied. Please enable it in settings.", "OK");
-                yield break;
-            }
-
-            var phoneContacts = await Communication.Contacts.Default.GetAllAsync();
-
-            if (phoneContacts == null)
-                yield break;
-
-            foreach (var contact in phoneContacts)
-            {
-                yield return contact;
-            }
+            _phoneContactsImported = true;
+            await ImportPhoneContactsAsync();
         }
-        finally { };
+        //RefreshList();
     }
 
-    private async void LoadContacts(List<Contact> contactsList)
+    private async Task ImportPhoneContactsAsync()
     {
-        var contacts = new ObservableCollection<Contact>(contactsList);
+        var status = await Permissions.CheckStatusAsync<Permissions.ContactsRead>();
+        if (status != PermissionStatus.Granted)
+            status = await Permissions.RequestAsync<Permissions.ContactsRead>();
+
+        if (status != PermissionStatus.Granted)
+        {
+            await DisplayAlertAsync("Permission Denied",
+                "Access to contacts is denied. Please enable it in settings.", "OK");
+            return;
+        }
 
         try
         {
+            var phoneContacts = await Communication.Contacts.Default.GetAllAsync();
+            var known = ContactRepository.GetContacts()
+                .Select(c => Normalize(c.PhoneNumber))
+                .Where(n => n.Length > 0)
+                .ToHashSet();
 
-            var phoneContacts = GetPhoneContacts(); ;
-
-            await foreach (var contact in phoneContacts)
+            foreach (var pc in phoneContacts ?? Enumerable.Empty<Communication.Contact>())
             {
-                string name = $"{contact.GivenName} {contact.FamilyName}".Trim();
-                string phoneNumber = contact.Phones.FirstOrDefault()?.PhoneNumber ?? string.Empty;
+                var number = pc.Phones.FirstOrDefault()?.PhoneNumber ?? string.Empty;
+                var key = Normalize(number);
+                if (key.Length == 0 || !known.Add(key)) continue;
 
-                if (contacts.FirstOrDefault(x => x.PhoneNumber == phoneNumber) != null)
-                {
-                    continue;
-                }
+                var name = !string.IsNullOrWhiteSpace(pc.DisplayName)
+                    ? pc.DisplayName
+                    : $"{pc.GivenName} {pc.FamilyName}".Trim();
 
-                Contact newContact = new(name, phoneNumber);
-
-                ContactRepository.AddContact(newContact);
-                contacts.Add(newContact);
+                ContactRepository.AddContact(new Contact(name, number));
             }
         }
         catch (Exception ex)
         {
-            await DisplayAlertAsync("Error", ex.Message, "Ok");
+            await DisplayAlertAsync("Error", ex.Message, "OK");
         }
-
-        listContacts.ItemsSource = contacts.Where(x => !x.IsDeleted).ToList();
     }
 
-    protected override void OnAppearing()
+    private static string Normalize(string? n) =>
+        new string((n ?? string.Empty).Where(char.IsDigit).ToArray());
+
+    private void RefreshList()
     {
-        base.OnAppearing();
-        LoadContacts(ContactRepository.GetContacts());
+        var source = string.IsNullOrWhiteSpace(_currentSearch)
+            ? ContactRepository.GetContacts()
+            : ContactRepository.SearchContacts(_currentSearch);
+
+        // listContacts.ItemsSource = source.Where(c => !c.IsDeleted).ToList();
     }
 
-    private void OnSwipeEnded(object sender, SwipeEndedEventArgs e)
+    public async void SearchBar_TextChanged(object sender, TextChangedEventArgs e)
     {
-        _isSwiping = true;
+        _searchCts?.Cancel();
+        _searchCts = new CancellationTokenSource();
+        try { await Task.Delay(300, _searchCts.Token); }
+        catch (TaskCanceledException) { return; }
+
+        _currentSearch = e.NewTextValue?.Trim() ?? string.Empty;
+        //RefreshList();
+    }
+
+    public async void OnDeleteSwipeInvoked(object sender, EventArgs e)
+    {
+        if (sender is SwipeItem { BindingContext: Contact contact })
+        {
+            bool confirm = await DisplayAlertAsync("Delete Contact",
+                $"Are you sure you want to delete {contact.Name}?", "Yes", "No");
+            if (!confirm) return;
+
+            ContactRepository.DeleteContact(contact.Id);
+            //RefreshList();
+        }
+    }
+
+    public async void OnEditSwipeInvoked(object sender, EventArgs e)
+    {
+        if (sender is SwipeItem { BindingContext: Contact contact })
+            await Shell.Current.GoToAsync($"{nameof(EditContactPage)}?Id={contact.Id}");
+    }
+
+    private void OnSwipeEnded(object sender, SwipeEndedEventArgs e) => _isSwiping = true;
+
+    public async void OnContactTapped(object sender, TappedEventArgs e)
+    {
+        if (_isSwiping) { _isSwiping = false; return; }
+        if (sender is BindableObject { BindingContext: Contact contact })
+            await Shell.Current.GoToAsync($"{nameof(DetailsContactPage)}?Id={contact.Id}");
     }
 
     public async void BtnAddContact_Clicked(object sender, EventArgs e)
     {
         await Shell.Current.GoToAsync(nameof(AddContactPage));
     }
-
-    public async void OnContactTapped(object sender, TappedEventArgs e)
-    {
-        if (sender is BindableObject view && view.BindingContext is Contact contact)
-        {
-            await Shell.Current.GoToAsync($"{nameof(DetailsContactPage)}?Id={contact.Id}");
-        }
-    }
-
-    public void OnEditSwipeInvoked(object sender, EventArgs e)
-    {
-        if (sender is SwipeItem swipeItem && swipeItem.BindingContext is Contact contact)
-        {
-            Shell.Current.GoToAsync($"{nameof(EditContactPage)}?Id={contact.Id}");
-        }
-    }
-
-    public void OnDeleteSwipeInvoked(object sender, EventArgs e)
-    {
-        if (sender is SwipeItem swipeItem && swipeItem.BindingContext is Contact contact)
-        {
-
-            DisplayAlertAsync("Delete Contact", $"Are you sure you want to delete {contact.Name}?", "Yes", "No").ContinueWith(async t =>
-            {
-                if (t.Result)
-                {
-                    ContactRepository.DeleteContact(contact.Id);
-                    LoadContacts(ContactRepository.GetContacts());
-                }
-            }, TaskScheduler.FromCurrentSynchronizationContext());
-
-        }
-    }
-
-    public async void SearchBar_TextChanged(object sender, TextChangedEventArgs e)
-    {
-        try
-        {
-            searchBarCct?.Cancel();
-            searchBarCct = new CancellationTokenSource();
-            var token = searchBarCct.Token;
-
-            await Task.Delay(500, token);
-
-            string searchText = e.NewTextValue?.ToLower() ?? string.Empty;
-            LoadContacts(ContactRepository.SearchContacts(searchText));
-        }
-        catch (TaskCanceledException ex)
-        {
-            Console.WriteLine(ex.Message);
-        }
-    }
-
-
 }
