@@ -77,8 +77,6 @@ public partial class ContactPage : ContentPage
 
     private async void RefreshList()
     {
-        Console.WriteLine($"++++++++++++++ {_currentSearch}");
-
         if (string.IsNullOrWhiteSpace(_currentSearch))
         {
             await _viewModel.LoadCommand.ExecuteAsync(null);

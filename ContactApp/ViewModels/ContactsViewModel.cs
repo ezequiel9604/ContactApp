@@ -36,7 +36,7 @@ namespace ContactApp.ViewModels
             }
         }
 
-        public async Task GetContactByName(string name, CancellationToken ct = default)
+        public async Task GetContactByName(string name)
         {
             try
             {

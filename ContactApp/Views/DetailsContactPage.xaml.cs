@@ -1,4 +1,5 @@
 using ContactApp.Models;
+using ContactApp.ViewModels;
 using Contact = ContactApp.Models.Contact;
 
 namespace ContactApp.Views;
@@ -8,25 +9,25 @@ public partial class DetailsContactPage : ContentPage
 {
 
 	private Contact? _contact;
+    private readonly ContactsViewModel _viewModel;
 
     public string ContactId
     {
-        set
-        {
-            _contact = ContactRepository.GetContactById(Convert.ToInt32(value));
-            BindingContext = _contact;
-
-            if (string.IsNullOrEmpty(_contact?.Address))
-            {
-                btnViewMap.IsEnabled = false;
-            }
-        }
+        set => LoadContact(value);
     }
 
-    public DetailsContactPage()
+    public DetailsContactPage(ContactsViewModel viewModel)
 	{
 		InitializeComponent();
+        _viewModel = viewModel;
 	}
+
+    private void LoadContact(string id)
+    {
+        int contactId = int.TryParse(id, out var parsedId) ? parsedId : -1;
+        _contact = _viewModel.Contacts.FirstOrDefault(c => c.Id == contactId);
+        BindingContext = _contact;
+    }
 
     private async void OpenMap(Contact contact)
     {
