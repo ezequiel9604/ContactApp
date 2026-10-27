@@ -23,16 +23,19 @@ namespace ContactApp.Services
 
             return response;
         }
-        public async Task<Contact?> GetContactByIdAsync(int id, CancellationToken ct = default)
+
+        public async Task<List<Contact>> GetContactByNameAsync(string name)
         {
-            var response = await _httpClient.GetAsync($"contacts/{id}", ct);
-
-            if (response.StatusCode == HttpStatusCode.NotFound)
+            var response = await _httpClient.GetAsync($"contacts/search?name={WebUtility.UrlEncode(name)}");
+            if (response.IsSuccessStatusCode)
             {
-                return null;
+                var contacts = await response.Content.ReadFromJsonAsync<List<Contact>>();
+                return contacts ?? new List<Contact>();
             }
-
-            return await response.Content.ReadFromJsonAsync<Contact>(ct) ?? new Contact();
+            else
+            {
+                throw new HttpRequestException($"Failed to retrieve contact by name. Status code: {response.StatusCode}");
+            }
         }
     }
 }

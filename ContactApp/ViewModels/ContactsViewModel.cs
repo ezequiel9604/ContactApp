@@ -11,20 +11,46 @@ namespace ContactApp.ViewModels
         private readonly ContactService _service;
         public ObservableCollection<Contact> Contacts { get; } = [];
 
-        public ContactsViewModel(ContactService service) => _service = service;
+        public ContactsViewModel(ContactService service)
+        {
+            _service = service;
+        }
 
         [RelayCommand]
         async Task LoadAsync()
         {
             try
             {
+                var contacts = await _service.GetContactsAsync();
                 Contacts.Clear();
-                foreach (var c in await _service.GetContactsAsync())
-                    Contacts.Add(c);
+
+                foreach (var contact in contacts)
+                {
+                    Contacts.Add(contact);
+                }
             }
             catch (HttpRequestException ex)
             {
-                System.Diagnostics.Debug.WriteLine($"---------------- {ex.ToString()}");
+                System.Diagnostics.Debug.WriteLine($"---------------- {ex}", "CONNECTION");
+                await Shell.Current.DisplayAlertAsync("Error", ex.Message, "Ok");
+            }
+        }
+
+        public async Task GetContactByName(string name, CancellationToken ct = default)
+        {
+            try
+            {
+                
+                var contacts = await _service.GetContactByNameAsync(name);
+                Contacts.Clear();
+                foreach (var c in contacts)
+                {
+                    Contacts.Add(c);
+                }
+            }
+            catch (HttpRequestException ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"---------------- {ex}","CONNECTION");
                 await Shell.Current.DisplayAlertAsync("Error", ex.Message, "Ok");
             }
         }

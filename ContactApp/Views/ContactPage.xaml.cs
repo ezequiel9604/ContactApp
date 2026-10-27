@@ -18,19 +18,18 @@ public partial class ContactPage : ContentPage
     {
         InitializeComponent();
         _viewModel = viewModel;
-
         BindingContext = _viewModel;
     }
     protected override async void OnAppearing()
     {
         base.OnAppearing();
-        await _viewModel.LoadCommand.ExecuteAsync(null);
-        if (!_phoneContactsImported)
-        {
-            _phoneContactsImported = true;
-            await ImportPhoneContactsAsync();
-        }
-        //RefreshList();
+        // await _viewModel.LoadCommand.ExecuteAsync(null);
+        //if (!_phoneContactsImported)
+        //{
+        //    _phoneContactsImported = true;
+        //    await ImportPhoneContactsAsync();
+        //}
+        RefreshList();
     }
 
     private async Task ImportPhoneContactsAsync()
@@ -76,13 +75,20 @@ public partial class ContactPage : ContentPage
     private static string Normalize(string? n) =>
         new string((n ?? string.Empty).Where(char.IsDigit).ToArray());
 
-    private void RefreshList()
+    private async void RefreshList()
     {
-        var source = string.IsNullOrWhiteSpace(_currentSearch)
-            ? ContactRepository.GetContacts()
-            : ContactRepository.SearchContacts(_currentSearch);
+        Console.WriteLine($"++++++++++++++ {_currentSearch}");
 
-        // listContacts.ItemsSource = source.Where(c => !c.IsDeleted).ToList();
+        if (string.IsNullOrWhiteSpace(_currentSearch))
+        {
+            await _viewModel.LoadCommand.ExecuteAsync(null);
+        } 
+        else
+        {
+            await _viewModel.GetContactByName(_currentSearch);
+        }
+
+        BindingContext = _viewModel;
     }
 
     public async void SearchBar_TextChanged(object sender, TextChangedEventArgs e)
@@ -93,7 +99,7 @@ public partial class ContactPage : ContentPage
         catch (TaskCanceledException) { return; }
 
         _currentSearch = e.NewTextValue?.Trim() ?? string.Empty;
-        //RefreshList();
+        RefreshList();
     }
 
     public async void OnDeleteSwipeInvoked(object sender, EventArgs e)
