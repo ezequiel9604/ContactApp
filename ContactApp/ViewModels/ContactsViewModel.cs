@@ -25,7 +25,7 @@ namespace ContactApp.ViewModels
             catch (HttpRequestException ex)
             {
                 System.Diagnostics.Debug.WriteLine($"---------------- {ex.ToString()}");
-                await Shell.Current.DisplayAlertAsync("Error", ex.Message, "OK");
+                await Shell.Current.DisplayAlertAsync("Error", ex.Message, "Ok");
             }
         }
     }

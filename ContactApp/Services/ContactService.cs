@@ -14,7 +14,14 @@ namespace ContactApp.Services
 
         public async Task<List<Contact>> GetContactsAsync()
         {
-            return await _httpClient.GetFromJsonAsync<List<Contact>>("contacts") ?? new List<Contact>();
+            var response = await _httpClient.GetFromJsonAsync<List<Contact>>("contacts");
+
+            if (response == null)
+            {
+                throw new HttpRequestException("Failed to retrieve contacts from the server.");
+            }
+
+            return response;
         }
         public async Task<Contact?> GetContactByIdAsync(int id, CancellationToken ct = default)
         {
@@ -25,7 +32,6 @@ namespace ContactApp.Services
                 return null;
             }
 
-            response.EnsureSuccessStatusCode();
             return await response.Content.ReadFromJsonAsync<Contact>(ct) ?? new Contact();
         }
     }

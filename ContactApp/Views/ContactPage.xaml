@@ -20,10 +20,12 @@
                    Margin="0,8,14,0"
                    TextChanged="SearchBar_TextChanged"/>
 
-        <RefreshView Command="{Binding LoadCommand}" IsRefreshing="{Binding LoadCommand.IsRunning, Mode=OneWay}">
+        <RefreshView 
+            Grid.Row="1" 
+            Command="{Binding LoadCommand}" 
+            IsRefreshing="{Binding LoadCommand.IsRunning, Mode=OneWay}">
 
             <CollectionView ItemsSource="{Binding Contacts}"
-                        Grid.Row="1"
                         BackgroundColor="Transparent"
                         SelectionMode="None"
                         Margin="16,8"
@@ -33,6 +35,7 @@
                     <LinearItemsLayout Orientation="Vertical" ItemSpacing="12" />
                 </CollectionView.ItemsLayout>
 
+                <!-- show for empty list -->
                 <CollectionView.EmptyView>
                     <Grid Padding="32">
                         <VerticalStackLayout VerticalOptions="Center" HorizontalOptions="Center" Spacing="12">
@@ -114,16 +117,15 @@
             </CollectionView>
 
         </RefreshView>
-
         <Button x:Name="btnAddContact"
-                Grid.Row="2"
-                Text="Add Contact"
-                BackgroundColor="#1A73E8"
-                TextColor="White"
-                FontSize="16"
-                CornerRadius="8"
-                HeightRequest="48"
-                Margin="16,8"
-                Clicked="BtnAddContact_Clicked" />
+         Grid.Row="2"
+         Text="Add Contact"
+         BackgroundColor="#1A73E8"
+         TextColor="White"
+         FontSize="16"
+         CornerRadius="8"
+         HeightRequest="48"
+         Margin="16,8"
+         Clicked="BtnAddContact_Clicked" />
     </Grid>
 </ContentPage>

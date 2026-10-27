@@ -18,6 +18,7 @@ public partial class ContactPage : ContentPage
     {
         InitializeComponent();
         _viewModel = viewModel;
+
         BindingContext = _viewModel;
     }
     protected override async void OnAppearing()
