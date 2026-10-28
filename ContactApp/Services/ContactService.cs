@@ -38,6 +38,11 @@ namespace ContactApp.Services
             }
         }
 
+        public async Task<HttpResponseMessage> AddContactAsync(Contact contact)
+        {
+            return await _httpClient.PostAsJsonAsync("contacts", contact);
+        }
+
         public async Task<HttpResponseMessage> UpdateContactAsync(Contact contact)
         {
             return await _httpClient.PatchAsJsonAsync($"contacts/{contact.Id}", contact);

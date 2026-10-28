@@ -118,5 +118,28 @@ namespace ContactApp.ViewModels
                 return false;
             }
         }
+
+        public async Task<bool> AddContact(Contact contact)
+        {
+            try
+            {
+                var response = await _service.AddContactAsync(contact);
+                if (response.IsSuccessStatusCode)
+                {
+                    return true;
+                }
+                else
+                {
+                    await Shell.Current.DisplayAlertAsync("Error", "Failed to add contact.", "Ok");
+                }
+            }
+            catch (HttpRequestException ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"---------------- {ex}", "CONNECTION");
+                await Shell.Current.DisplayAlertAsync("Error", ex.Message, "Ok");
+            }
+
+            return false;
+        }
     }
 }
