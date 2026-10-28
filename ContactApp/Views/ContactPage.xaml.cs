@@ -108,8 +108,11 @@ public partial class ContactPage : ContentPage
                 $"Are you sure you want to delete {contact.Name}?", "Yes", "No");
             if (!confirm) return;
 
-            ContactRepository.DeleteContact(contact.Id);
-            //RefreshList();
+            var isDeleted = await _viewModel.DeleteContact(contact.Id);
+            if (isDeleted)
+            {
+                RefreshList();
+            }
         }
     }
 

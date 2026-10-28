@@ -89,5 +89,34 @@ namespace ContactApp.ViewModels
                 return false;
             }
         }
+
+        public async Task<bool> DeleteContact(int contactId)
+        {
+            try
+            {
+                var response = await _service.DeleteContactAsync(contactId);
+                if (response.IsSuccessStatusCode)
+                {
+                    // Remove the contact from the ObservableCollection
+                    var existingContact = Contacts.FirstOrDefault(c => c.Id == contactId);
+                    if (existingContact != null)
+                    {
+                        Contacts.Remove(existingContact);
+                        return true;
+                    }
+                }
+                else
+                {
+                    await Shell.Current.DisplayAlertAsync("Error", "Failed to delete contact.", "Ok");
+                }
+                return false;
+            }
+            catch (HttpRequestException ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"---------------- {ex}", "CONNECTION");
+                await Shell.Current.DisplayAlertAsync("Error", ex.Message, "Ok");
+                return false;
+            }
+        }
     }
 }
