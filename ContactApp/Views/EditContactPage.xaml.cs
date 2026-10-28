@@ -1,4 +1,5 @@
 using ContactApp.Models;
+using ContactApp.ViewModels;
 using Contact = ContactApp.Models.Contact;
 
 namespace ContactApp.Views;
@@ -6,43 +7,56 @@ namespace ContactApp.Views;
 [QueryProperty(nameof(ContactId), "Id")]
 public partial class EditContactPage : ContentPage
 {
-
-    private Contact? Contact;
-
-    public EditContactPage()
-    {
-        InitializeComponent();
-    }
+    private Contact? _contact;
+    private readonly ContactsViewModel _viewModel;
 
     public string ContactId
     {
-        get { return Contact?.Id.ToString() ?? string.Empty; }
-        set
-        {
-            Contact = ContactRepository.GetContactById(Convert.ToInt32(value));
-            if (Contact != null)
-            {
-                contactControl.Name = Contact.Name;
-                contactControl.Phone = Contact.PhoneNumber;
-                contactControl.Email = Contact.Email ?? string.Empty;
-            }
-        }
+        set => LoadContact(value);
     }
 
-    public void BtnUpdate_Clicked(object sender, EventArgs e)
+    public EditContactPage(ContactsViewModel viewModel)
     {
-        if (Contact != null)
+        InitializeComponent();
+        _viewModel = viewModel;
+    }
+
+    private void LoadContact(string id)
+    {
+        int contactId = int.TryParse(id, out var parsedId) ? parsedId : -1;
+        _contact = _viewModel.Contacts.FirstOrDefault(c => c.Id == contactId);
+
+        if(_contact == null)
         {
-            Contact.Name = contactControl.Name;
-            Contact.PhoneNumber = contactControl.Phone;
-            Contact.Email = contactControl.Email;
-            Contact.Address = contactControl.Address;
-
-            ContactRepository.UpdateContact(Contact);
-
-            DisplayAlertAsync("Success", "Contact updated successfully.", "OK");
+            DisplayAlertAsync("Error", "Contact not found.", "OK");
+            Shell.Current.GoToAsync("..");
+            return;
         }
-        Shell.Current.GoToAsync("..");
+
+        contactControl.Name = _contact?.Name ?? string.Empty;
+        contactControl.Phone = _contact?.PhoneNumber ?? string.Empty;
+        contactControl.Email = _contact?.Email ?? string.Empty;
+        contactControl.Address = _contact?.Address ?? string.Empty;
+    }
+
+    public async void BtnUpdate_Clicked(object sender, EventArgs e)
+    {
+        if (_contact != null)
+        {
+            _contact.Name = contactControl.Name;
+            _contact.PhoneNumber = contactControl.Phone;
+            _contact.Email = contactControl.Email;
+            _contact.Address = contactControl.Address;
+
+            var isUpdated = await _viewModel.UpdateContact(_contact);
+
+            if (isUpdated)
+            {
+                await DisplayAlertAsync("Success", "Contact updated successfully.", "OK");
+            }
+        }
+
+        await Shell.Current.GoToAsync("..");
     }
 
     public void BtnCancel_Clicked(object sender, EventArgs e)

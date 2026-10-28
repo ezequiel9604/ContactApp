@@ -37,5 +37,10 @@ namespace ContactApp.Services
                 throw new HttpRequestException($"Failed to retrieve contact by name. Status code: {response.StatusCode}");
             }
         }
+
+        public async Task<HttpResponseMessage> UpdateContactAsync(Contact contact)
+        {
+            return await _httpClient.PatchAsJsonAsync($"contacts/{contact.Id}", contact);
+        }
     }
 }

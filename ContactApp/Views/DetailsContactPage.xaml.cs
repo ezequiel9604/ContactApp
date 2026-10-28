@@ -1,4 +1,3 @@
-using ContactApp.Models;
 using ContactApp.ViewModels;
 using Contact = ContactApp.Models.Contact;
 
@@ -29,6 +28,37 @@ public partial class DetailsContactPage : ContentPage
         BindingContext = _contact;
     }
 
+    private async void BtnViewMap_Clicked(object sender, EventArgs e)
+    {
+        if (_contact ==  null)
+        {
+            await DisplayAlertAsync("Error", "Contact not available.", "Ok");
+            return;
+        }
+
+        if (string.IsNullOrEmpty(_contact.Address))
+        {
+            await DisplayAlertAsync("Error", "Address not available.", "Ok");
+            return;
+        }
+
+        if (_contact.Coordinates == null)
+        {
+            Location? location = await _contact.GetCoordinatesAsync();
+
+            if (location == null)
+            {
+                await DisplayAlertAsync("Error", "Coordinates not available.", "Ok");
+                return;
+            }
+
+            OpenMap(_contact);
+            return;
+        }
+
+        OpenMap(_contact);
+    }
+
     private async void OpenMap(Contact contact)
     {
         if (contact?.Coordinates == null)
@@ -42,35 +72,6 @@ public partial class DetailsContactPage : ContentPage
         {
             await DisplayAlertAsync("Error", "No maps app available.", "OK");
             return;
-        }
-    }
-
-    private async void BtnViewMap_Clicked(object sender, EventArgs e)
-    {
-        if (_contact != null)
-        {
-
-            if (string.IsNullOrEmpty(_contact.Address))
-            {
-                await DisplayAlertAsync("Error", "Address not available.", "Ok");
-                return;
-            }
-
-            if (_contact.Coordinates == null)
-            {
-                Location? location = await _contact.GetCoordinatesAsync();
-
-                if (location == null)
-                {
-                    await DisplayAlertAsync("Error", "Coordinates not available.", "Ok");
-                    return;
-                }
-
-                OpenMap(_contact);
-                return;
-            }
-
-            OpenMap(_contact);
         }
     }
 }

@@ -40,7 +40,6 @@ namespace ContactApp.ViewModels
         {
             try
             {
-                
                 var contacts = await _service.GetContactByNameAsync(name);
                 Contacts.Clear();
                 foreach (var c in contacts)
@@ -52,6 +51,42 @@ namespace ContactApp.ViewModels
             {
                 System.Diagnostics.Debug.WriteLine($"---------------- {ex}","CONNECTION");
                 await Shell.Current.DisplayAlertAsync("Error", ex.Message, "Ok");
+            }
+        }
+
+        public async Task<bool> UpdateContact(Contact contact)
+        {
+            try
+            {
+                var response = await _service.UpdateContactAsync(contact);
+                if (response.IsSuccessStatusCode)
+                {
+                    // Update the contact in the ObservableCollection
+                    var existingContact = Contacts.FirstOrDefault(c => c.Id == contact.Id);
+                    if (existingContact != null)
+                    {
+                        existingContact.Name = contact.Name;
+                        existingContact.PhoneNumber = contact.PhoneNumber;
+                        existingContact.Email = contact.Email;
+                        existingContact.Address = contact.Address;
+                        // Notify the UI that the collection has changed
+                        OnPropertyChanged(nameof(Contacts));
+
+                        return true;
+                    }
+                }
+                else
+                {
+                    await Shell.Current.DisplayAlertAsync("Error", "Failed to update contact.", "Ok");
+                }
+
+                return false;
+            }
+            catch (HttpRequestException ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"---------------- {ex}", "CONNECTION");
+                await Shell.Current.DisplayAlertAsync("Error", ex.Message, "Ok");
+                return false;
             }
         }
     }
